@@ -1,11 +1,6 @@
 local io=require "io"
-local board={
-  ["url"]="http://127.0.0.1/phpbb30",
-  ["forum"]=2,
-  ["topic"]=1,
-  ["user"]="iggyvolz",
-  ["pass"]="password"
-}
+local config=require "config"
+local board=config.board
 board.__index=board
 
 local function explode(div,str) -- credit: http://richard.warburton.it
