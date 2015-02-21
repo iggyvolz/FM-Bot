@@ -26,9 +26,20 @@ local function url_encode(str)
   end
   return str
 end
-
-if board.login then
+if not board.private then
+  if not board.hidewarnings then
+    print("Warning: No private attribute set.  We must blindly assume login is successful.")
+  end
+end
+if not board:checklogin() then
   shell("curl --silent -d \"username="..board.user.."&password="..board.pass.."&login=Login\" "..board.url.."/ucp.php?mode=login -c cookies.txt")
+  if not board:checklogin() then
+    error("Log in failed")
+  end
+end
+function board:checklogin()
+  if not board.private then return true end
+  return (shell("curl --silent \""..board.url..board.private.."\" -b cookies.txt|grep \"In order to login you must be registered. Registering takes only a few moments but gives you increased capabilities. The board administrator may also grant additional permissions to registered users. Before you register please ensure you are familiar with our terms of use and related policies. Please ensure you read any forum rules as you navigate around the board.\"") == "")
 end
 function board:post(subj,msg)
   local conts=shell("curl --silent \""..self.url.."/posting.php?mode=reply&f="..self.forum.."&t="..self.topic.."\" -b cookies.txt")
