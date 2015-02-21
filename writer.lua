@@ -8,8 +8,9 @@ for x,i in ipairs(board.pmnums) do
     end
   end
   if not found then
+    local r=board:readpm(i)
     assert(lfs.mkdir("./cache/pms/"..i))
-    local a,b,c,r=assert(io.open("./cache/pms/"..i.."/author", "w")),assert(io.open("./cache/pms/"..i.."/conts", "w")),assert(io.open("./cache/pms/"..i.."/unhandled", "w")),board:readpm(i)
+    local a,b,c=assert(io.open("./cache/pms/"..i.."/author", "w")),assert(io.open("./cache/pms/"..i.."/conts", "w")),assert(io.open("./cache/pms/"..i.."/unhandled", "w"))
     a:write(r.author)
     a:close()
     b:write(r.conts)
@@ -26,13 +27,12 @@ for i=1,board.numposts do
     end
   end
   if not found then
+    local r=board:read(i)
     assert(lfs.mkdir("./cache/msgs/"..i))
-    local a,b,c,r=assert(io.open("./cache/msgs/"..i.."/author", "w")),assert(io.open("./cache/msgs/"..i.."/conts", "w")),assert(io.open("./cache/msgs/"..i.."/unhandled", "w")),board:read(i)
+    local a,b,c=assert(io.open("./cache/msgs/"..i.."/author", "w")),assert(io.open("./cache/msgs/"..i.."/conts", "w"))
     a:write(r.author)
     a:close()
     b:write(r.conts)
     b:close()
-    c:write("UNHANDLED")
-    c:close()
   end
 end
