@@ -48,8 +48,19 @@ function board:post(subj,msg)
   --"
 end
 function board:read(p)
-  local page=explode("</div>",explode("<div class=\"postbody\">",shell("curl --silent \""..self.url.."/viewtopic.php?f="..self.forum.."&t="..self.topic.."&start="..p.."\" -b cookies.txt"))[2])[1]
-  return {["conts"]=explode("<div class=\"content\">",page)[2],["author"]=explode(">",explode("</a>",explode("<strong>",page)[2])[1])[2]}
+  local rp=board:readpage(p//24)
+  return rp[(p%24)+1]
+end
+board.readpages={}
+function board:readpage(p)
+  if self.readpages[p] then return self.readpages[p] end -- If cached result then return it
+  local page,toreturn=shell("curl --silent \""..self.url.."/viewtopic.php?f="..self.forum.."&t="..self.topic.."&start="..((p-1)*25).."\" -b cookies.txt"),{}
+  for i=1,#explode("<div class=\"postbody\">",page)-2 do
+    local sctn=explode("</div>",explode("<div class=\"postbody\">",page)[2+i])[1],{}
+    table.insert(toreturn,{["conts"]=explode("<div class=\"content\">",sctn)[2],["author"]=explode(">",explode("</a>",explode("<strong>",sctn)[2])[1])[2]})
+  end
+  self.readpages[p]=toreturn -- Cache this result
+  return toreturn
 end
 function board:readpm(p)
   local page=explode("</div>",explode("<div class=\"postbody\">",shell("curl --silent \""..self.url.."/ucp.php?i=pm&mode=view&p="..p.."\" -b cookies.txt"))[2])[1]
