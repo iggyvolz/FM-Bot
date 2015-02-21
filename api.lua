@@ -54,16 +54,23 @@ function board:readpm(p)
   local page=explode("</div>",explode("<div class=\"postbody\">",shell("curl --silent \""..self.url.."/ucp.php?i=pm&mode=view&p="..p.."\" -b cookies.txt"))[2])[1]
   return {["conts"]=explode("<div class=\"content\">",page)[2],["author"]=explode(">",explode("</a>",explode("<p class=\"author\">",page)[2])[1])[7]}
 end
-local function getpmnums()
+local function numpms()
+  local page=shell("curl --silent \""..board.url.."/ucp.php?i=pm&folder=inbox\" -b cookies.txt")
+  return tonumber(explode("messages",explode("<li class=\"rightside pagination\">",page)[2])[1])
+end
+board.numpms=numpms()
+local function getpms()
   local self,i,pms=board,2,{} -- Simulate other functions for consistancy
-  local page=shell("curl --silent \""..self.url.."/ucp.php?i=pm&folder=inbox\" -b cookies.txt")
-  while explode("<a href=\"./ucp.php?i=pm&amp;mode=view&amp;f=0&amp;p=",page)[i] do
-    table.insert(pms,tonumber(explode("\"",explode("<a href=\"./ucp.php?i=pm&amp;mode=view&amp;f=0&amp;p=",page)[i])[1]))
-    i=i+1
+  while i<2+board.numpms do
+    local page=shell("curl --silent \""..self.url.."/ucp.php?i=pm&folder=inbox&start="..(i-2).."\" -b cookies.txt")
+    while explode("<a href=\"./ucp.php?i=pm&amp;mode=view&amp;f=0&amp;p=",page)[i] do
+      table.insert(pms,board:readpm(tonumber(explode("\"",explode("<a href=\"./ucp.php?i=pm&amp;mode=view&amp;f=0&amp;p=",page)[i])[1])))
+      i=i+1
+    end
   end
   return pms
 end
-board.pmnums=getpmnums()
+board.pms=getpms()
 local function getnumofposts()
   local self=board -- Simulate other functions for consistancy
   local page=shell("curl --silent \""..self.url.."/viewtopic.php?f="..self.forum.."&t="..self.topic.."\" -b cookies.txt")
