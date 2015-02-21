@@ -59,18 +59,18 @@ local function numpms()
   return tonumber(explode("messages",explode("<li class=\"rightside pagination\">",page)[2])[1])
 end
 board.numpms=numpms()
-local function getpms()
+local function getpmnums()
   local self,i,pms=board,2,{} -- Simulate other functions for consistancy
   while i<2+board.numpms do
     local page=shell("curl --silent \""..self.url.."/ucp.php?i=pm&folder=inbox&start="..(i-2).."\" -b cookies.txt")
     while explode("<a href=\"./ucp.php?i=pm&amp;mode=view&amp;f=0&amp;p=",page)[i] do
-      table.insert(pms,board:readpm(tonumber(explode("\"",explode("<a href=\"./ucp.php?i=pm&amp;mode=view&amp;f=0&amp;p=",page)[i])[1])))
+      table.insert(pms,tonumber(explode("\"",explode("<a href=\"./ucp.php?i=pm&amp;mode=view&amp;f=0&amp;p=",page)[i])[1]))
       i=i+1
     end
   end
   return pms
 end
-board.pms=getpms()
+board.pmnums=getpmnums()
 local function getnumofposts()
   local self=board -- Simulate other functions for consistancy
   local page=shell("curl --silent \""..self.url.."/viewtopic.php?f="..self.forum.."&t="..self.topic.."\" -b cookies.txt")
