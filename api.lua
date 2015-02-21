@@ -52,7 +52,7 @@ function board:read(p)
 end
 function board:readpm(p)
   local page=explode("</div>",explode("<div class=\"postbody\">",shell("curl --silent \""..self.url.."/ucp.php?i=pm&mode=view&p="..p.."\" -b cookies.txt"))[2])[1]
-  return {["conts"]=explode("<div class=\"content\">",page)[2],["author"]=explode(">",explode("</a>",explode("<strong>",page)[2])[1])[2]}
+  return {["conts"]=explode("<div class=\"content\">",page)[2],["author"]=explode(">",explode("</a>",explode("<p class=\"author\">",page)[2])[1])[7]}
 end
 local function firstpmnum()
   local self=board -- Simulate other functions for consistancy
