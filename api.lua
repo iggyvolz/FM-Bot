@@ -37,7 +37,13 @@ function board:checklogin()
   return (shell("curl --silent \""..board.url..board.private.."\" -b cookies.txt|grep \"In order to login you must be registered. Registering takes only a few moments but gives you increased capabilities. The board administrator may also grant additional permissions to registered users. Before you register please ensure you are familiar with our terms of use and related policies. Please ensure you read any forum rules as you navigate around the board.\"") == "")
 end
 if not board:checklogin() then
-  shell("curl --silent -d \"username="..board.user.."&password="..board.pass.."&login=Login\" "..board.url.."/ucp.php?mode=login -c cookies.txt")
+  local result=shell("curl --silent -d \"username="..board.user.."&password="..board.pass.."&login=Login\" "..board.url.."/ucp.php?mode=login -c cookies.txt")
+  if #explode("<label>Spell this word backwards",result)>1 then
+    print("CAPTCHA question: Spell this word backwards: ",explode(":</label>",explode("<label>Spell this word backwards: ",result)[2])[1])
+    local answer=io.read()
+    local qaid=explode("\"",explode("<input type=\"hidden\" name=\"qa_confirm_id\" id=\"qa_confirm_id\" value=\"",result)[2])[1]
+    shell("curl --silent -d \"username="..board.user.."&password="..board.pass.."&login=Login&qa_answer="..answer.."&qa_confirm_id="..qaid.."\" "..board.url.."/ucp.php?mode=login -c cookies.txt")
+  end
   if not board:checklogin() then
     error("Log in failed")
   end
@@ -86,7 +92,7 @@ board.pmnums=getpmnums()
 local function getnumofposts()
   local self=board -- Simulate other functions for consistancy
   local page=shell("curl --silent \""..self.url.."/viewtopic.php?f="..self.forum.."&t="..self.topic.."\" -b cookies.txt")
-  return tonumber(explode(" posts",explode("<div class=\"pagination\">",page)[2])[1])
+  return tonumber(explode(" posts",explode("&bull;",explode("<div class=\"pagination\">",page)[2])[2])[1])
 end
 board.numposts=getnumofposts()
 return board
