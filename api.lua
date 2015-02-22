@@ -57,13 +57,28 @@ function board:read(p)
   local rp=board:readpage(p//24)
   return rp[(p%24)+1]
 end
+
+local function removeblockquotes(q)
+  local p=explode("<blockquote>",q)
+  s=p[1]
+  local l=0
+  for i=2,#p do
+    l=l+2
+    local e=explode("</blockquote>",p[i])
+    l=l-#e
+    if l == 0 then
+      s=s..e[#e]
+    end
+  end
+  return s
+end
 board.readpages={}
 function board:readpage(p)
   if self.readpages[p] then return self.readpages[p] end -- If cached result then return it
-  local page,toreturn=shell("curl --silent \""..self.url.."/viewtopic.php?f="..self.forum.."&t="..self.topic.."&start="..((p-1)*25).."\" -b cookies.txt"),{}
+  local page,toreturn=removeblockquotes(shell("curl --silent \""..self.url.."/viewtopic.php?f="..self.forum.."&t="..self.topic.."&start="..((p-1)*25).."\" -b cookies.txt")),{}
   for i=1,#explode("<div class=\"postbody\">",page)-2 do
     local sctn=explode("</div>",explode("<div class=\"postbody\">",page)[2+i])[1],{}
-    table.insert(toreturn,{["conts"]=explode("<div class=\"content\">",sctn)[2],["author"]=explode(">",explode("</a>",explode("<strong>",sctn)[2])[1])[2]})
+    table.insert(toreturn,{["conts"]=explode("<div class=\"content\">",sctn)[2]:gsub("<br />","  "):gsub("%b<>",""),["author"]=explode(">",explode("</a>",explode("<strong>",sctn)[2])[1])[2]})
   end
   self.readpages[p]=toreturn -- Cache this result
   return toreturn
