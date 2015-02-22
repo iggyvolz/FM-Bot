@@ -1,3 +1,4 @@
+local board=require "api"
 local function explode(div,str) -- credit: http://richard.warburton.it
   if (div=='') then return false end
   local pos,arr = 0,{}
@@ -41,4 +42,16 @@ while lfs.attributes("./cache/msgs/"..i) do
     table.insert(votecount.nolynch,author)
   end
   i=i+1
+end
+local function votecounttext(c,m,f)
+  local t="[b][color=#"..c.."]Current vote count:\n"
+  for i,x in pairs(f) do
+    t=t..i.." ("..#x.."): "
+    for i,v in ipairs(x) do
+      t=t..v..", "
+    end
+    t=t:sub(1,-3).."\n"
+  end
+  t=t.."[i]"..m.." votes are needed for majority.[/i][/color][/b]"
+  return t
 end

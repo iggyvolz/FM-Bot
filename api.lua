@@ -75,7 +75,7 @@ end
 board.readpages={}
 function board:readpage(p)
   if self.readpages[p] then return self.readpages[p] end -- If cached result then return it
-  local page,toreturn=removeblockquotes(shell("curl --silent \""..self.url.."/viewtopic.php?f="..self.forum.."&t="..self.topic.."&start="..((p-1)*25).."\" -b cookies.txt")),{}
+  local page,toreturn=removeblockquotes(shell("curl --silent \""..self.url.."/viewtopic.php?f="..self.forum.."&t="..self.topic.."&start="..((p*24)-1).."\" -b cookies.txt")),{}
   for i=1,#explode("<div class=\"postbody\">",page)-2 do
     local sctn=explode("</div>",explode("<div class=\"postbody\">",page)[2+i])[1],{}
     table.insert(toreturn,{["conts"]=explode("<div class=\"content\">",sctn)[2]:gsub("<br />","  "):gsub("%b<>",""),["author"]=explode(">",explode("</a>",explode("<strong>",sctn)[2])[1])[2]})
@@ -107,7 +107,10 @@ board.pmnums=getpmnums()
 local function getnumofposts()
   local self=board -- Simulate other functions for consistancy
   local page=shell("curl --silent \""..self.url.."/viewtopic.php?f="..self.forum.."&t="..self.topic.."\" -b cookies.txt")
-  return tonumber(explode(" posts",explode("&bull;",explode("<div class=\"pagination\">",page)[2])[2])[1])
+  local function maybeexplodebull(f)
+    if explode("&bull;",explode("posts",f)[1])[2] then return explode("&bull;",f)[2] else return f end
+  end
+  return tonumber(explode(" posts",maybeexplodebull(explode("<div class=\"pagination\">",page)[2]))[1])
 end
 board.numposts=getnumofposts()
 return board
