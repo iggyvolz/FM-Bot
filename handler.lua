@@ -54,7 +54,9 @@ local function votecounttext(c,m,f)
   t=t.."[i]"..m.." votes are needed for majority.[/i][/color][/b]"
   return t
 end
+print("Recounting the votes...")
 for user,vote in pairs(voters) do
+  print(user.." voted for "..vote)
   if not votecount[vote] then votecount[vote]={} end
   table.insert(votecount[vote],user)
 end
