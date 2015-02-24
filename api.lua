@@ -40,7 +40,7 @@ if not board:checklogin() then
   local result=shell("curl --silent -d \"username="..board.user.."&password="..board.pass.."&login=Login\" "..board.url.."/ucp.php?mode=login -c cookies.txt")
   if #explode("<label>Spell this word backwards",result)>1 then
     print("CAPTCHA question: Spell this word backwards: ",explode(":</label>",explode("<label>Spell this word backwards: ",result)[2])[1])
-    local answer=io.read()
+    local answer=explode(":</label>",explode("<label>Spell this word backwards: ",result)[2])[1]:reverse()
     local qaid=explode("\"",explode("<input type=\"hidden\" name=\"qa_confirm_id\" id=\"qa_confirm_id\" value=\"",result)[2])[1]
     shell("curl --silent -d \"username="..board.user.."&password="..board.pass.."&login=Login&qa_answer="..answer.."&qa_confirm_id="..qaid.."\" "..board.url.."/ucp.php?mode=login -c cookies.txt")
   end

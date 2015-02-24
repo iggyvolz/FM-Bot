@@ -14,32 +14,31 @@ local function shell(script)
   return io.popen(script):read("*a"):sub(1,-2)
 end
 
-local io,lfs,i,votecount,voters,players=require "io",require "lfs",1,{},{},{"TurdPile"}
+local io,lfs,i,votecount,voters,players=require "io",require "lfs",1,{},{},{"BlankMediaGames","Achilles","PyroMonkeyGG","TurdPile","shapesifter13","Party4lyfe","Guzame","Metrion","iggyvolz","Rickdaily12","ObiWan","ValeforRaine","FMBot","enderitem","M4xwell","Ciara","Nellyfox","Naru2008","iRanOutOfUsersSoHereIsAFakeOne","HereIsAnotherFakeOne"}
 while lfs.attributes("./cache/msgs/"..i) do
+  print("Reading post "..i)
   local f=assert(io.open("./cache/msgs/"..i.."/author"))
   local author=f:read("*a")
+  print("Post is by "..author)
   f:close()
   f=assert(io.open("./cache/msgs/"..i.."/conts"))
   local conts=f:read("*a")
+  print("Post contents are "..conts)
   f:close()
   if #explode("/unvote",conts:lower())>1 and voters[author] then
+    print("The user unvoted in this post")
     voters[author]=nil
   end
   for i=1,#players do
+    print("Checking "..players[i].." now")
     if #explode("/vote "..players[i]:lower(),conts:lower())>1 and not voters[author] then
-      if not votecount[players[i]] then
-        votecount[players[i]]={}
-      end
+      print("The player voted for "..players[i])
       voters[author]=players[i]
-      table.insert(votecount[players[i]],author)
     end
   end
   if #explode("/nolynch",conts:lower())>1 and not voters[author] then
-    if not votecount.nolynch then
-      votecount.nolynch={}
-    end
+    print("The player voted to nolynch")
     voters[author]="nolynch"
-    table.insert(votecount.nolynch,author)
   end
   i=i+1
 end
@@ -55,3 +54,11 @@ local function votecounttext(c,m,f)
   t=t.."[i]"..m.." votes are needed for majority.[/i][/color][/b]"
   return t
 end
+for user,vote in pairs(voters) do
+  if not votecount[vote] then votecount[vote]={} end
+  table.insert(votecount[vote],user)
+end
+require "pl.pretty".dump(votecount)
+require "pl.pretty".dump(voters)
+print(votecounttext("0080FF",10,votecount))
+board:post("Re: Play around with FMBot",votecounttext("0080FF",10,votecount))
